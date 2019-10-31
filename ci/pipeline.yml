@@ -1,0 +1,52 @@
+#################################################
+# Resources
+#################################################
+resources:
+
+- name: git-repo
+  type: git
+  source:
+    uri: ((github-repo))
+    branch: ((branch))
+    ignore_paths: ["ci/images/*"]
+
+- name: ci-images-git-repo
+  type: git
+  source:
+    uri: ((github-repo))
+    branch: ((branch))
+    paths: ["ci/images/*"]
+
+- name: vscode-extension-di-ci-image
+  type: docker-image
+  source:
+    repository: springsource-docker-private-local.jfrog.io/vscode-extension-di-ci-image
+    username: ((artifactory-username))
+    password: ((artifactory-password))
+    tag: ((branch))
+
+#################################################
+# Jobs
+#################################################
+jobs:
+
+- name: vscode-extension-di-ci-images
+  plan:
+  - get: ci-images-git-repo
+    trigger: true
+  - put: vscode-extension-di-ci-image
+    params:
+      build: ci-images-git-repo/ci/images/vscode-extension-di-ci-image
+      build_args:
+        BRANCH: ((branch))
+
+- name: publish-vscode-extension-di
+  plan:
+  - get: vscode-extension-di-ci-image
+    passed:
+    - vscode-extension-di-ci-images
+  - get: git-repo
+    trigger: true
+  - task: pack-publish
+    image: vscode-extension-di-ci-image
+    file: git-repo/ci/tasks/vscode-extension-di-publish.yml
