@@ -73,7 +73,6 @@ jobs:
     params:
       BUILD_NAME: ((build-name))
     on_success:
-      aggregate:
-      - put: vscode-extension-di-trigger
-        params:
-          file: triggers/((build-name))/*
+      put: vscode-extension-di-trigger
+      params:
+        file: triggers/((build-name))/*
