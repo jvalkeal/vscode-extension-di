@@ -5,3 +5,4 @@ github-repo: "https://github.com/spring-projects-experimental/vscode-extension-d
 github-repo-raw: "https://raw.githubusercontent.com/spring-projects-experimental/vscode-extension-di"
 artifactory-server: "https://repo.spring.io/"
 branch: "master"
+build-name: "vscode-extension-di"

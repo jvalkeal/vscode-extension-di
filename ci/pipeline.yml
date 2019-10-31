@@ -25,6 +25,24 @@ resources:
     password: ((artifactory-password))
     tag: ((branch))
 
+- name: vscode-extension-core-trigger
+  type: s3
+  source:
+    bucket: ((spr-artifacts-s3-bucket-name))
+    regexp: triggers/vscode-extension-core/trigger-(.*)
+    access_key_id: ((spr-s3-access-key-id))
+    secret_access_key: ((spr-s3-secret-access-key))
+    region_name: us-west-1
+
+- name: vscode-extension-di-trigger
+  type: s3
+  source:
+    bucket: ((spr-artifacts-s3-bucket-name))
+    regexp: triggers/((build-name))/trigger-(.*)
+    access_key_id: ((spr-s3-access-key-id))
+    secret_access_key: ((spr-s3-secret-access-key))
+    region_name: us-west-1
+
 #################################################
 # Jobs
 #################################################
@@ -47,6 +65,15 @@ jobs:
     - vscode-extension-di-ci-images
   - get: git-repo
     trigger: true
+  - get: vscode-extension-core-trigger
+    trigger: true
   - task: pack-publish
     image: vscode-extension-di-ci-image
     file: git-repo/ci/tasks/vscode-extension-di-publish.yml
+    params:
+      BUILD_NAME: ((build-name))
+    on_success:
+      aggregate:
+      - put: vscode-extension-di-trigger
+        params:
+          file: triggers/((build-name))/*
